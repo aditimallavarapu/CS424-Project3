@@ -1,0 +1,67 @@
+html {
+    position: relative;
+    width: 1024px;
+    height: 768px;
+
+}
+.stairViz{
+    margin: 2%;
+    border: solid black 2px;
+	}
+	
+.canvas{
+	margin: 1%;
+}	
+.menuIcon {
+    width: 48px;
+    height: 48px;
+    padding: 0px;
+    margin: -10px;
+}
+
+.leftMenu {
+
+    padding: 20px;
+
+}
+.leftMenuLi {
+    margin-top :25px;
+
+}
+ div.tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 2px;
+            font-size: 12pt;
+            font-family: "Century Gothic";
+            background-color: black;
+        }
+.link{
+	stroke-width: 2px;
+}
+
+.link:hover{
+	stroke-width: 7px;
+}
+
+hr.red {
+    width:35%;
+
+    border-top: 5px solid #ff7376;
+    margin: 9px 0;
+}
+hr.blue {
+    width:35%;
+    border-top: 5px solid #0098ce;
+    margin: 9px 0;
+}
+hr.green {
+    width:35%;
+    border-top: 5px solid #3ad531;
+    margin: 9px 0;
+}
+hr.purple {
+    width:35%;
+    border-top: 5px solid #8a6ad4;
+    margin: 9px 0;
+}
