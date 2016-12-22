@@ -11,6 +11,7 @@ $(document).ready(function(){
 	function render(){	
 	d3.selectAll("svg").selectAll(".group").remove();
 	d3.selectAll("svg").selectAll(".link").remove();
+	d3.selectAll(".selections").selectAll(".myCheckbox").property("checked",false);
 	d3.json("./data/labelleddata.json", function(error,datao) {
         if (error) {  //If error is not null, something went wrong.
             console.log(error);  //Log the error.
@@ -20,14 +21,10 @@ $(document).ready(function(){
 				console.log(error);  
 			}
 			else{
-			edge.sort(function(a, b) {			//sort in asending order of sourceid
-				return (a.sourceid) - (b.sourceid);
-			});
 			var temp_holder= [];
 			var max_x = $(".stairViz").width() - 10;
 			var max_y = $(".stairViz").height() -10;
 			var paragraph= [];
-			
 			var i=0;
 			var j=0;
 			var k=0;
@@ -38,12 +35,9 @@ $(document).ready(function(){
 				paragraph[i].index=i;
 				for(j=0;j<paragraph[i].length;j++){	
 					var len= paragraph[i][j].length;
-					//sentence[j]=paragraph[i][j];
 					for(k=0;k < len;k++){
 						var id=paragraph[i][j][k].Id
 						temp_holder[id] = paragraph[i][j][k];
-						//temp_holder[id].sentenceid=j;
-						//temp_holder[id].paragraphid=i;
 					}
 				}
 			}	
@@ -74,8 +68,8 @@ $(document).ready(function(){
 			function calc_coors(){
 				var temp_para = paragraph;
 				var temp_data = temp_holder;
-				var min_text = temp_para[0][0][0];
-				var max_text = temp_para[datao.length-1][temp_para[datao.length-1].length-1][temp_para[datao.length-1][temp_para[datao.length-1].length-1].length-1];
+				var min_text_temp = temp_para[0][0][0];
+				var max_text_temp = temp_para[datao.length-1][temp_para[datao.length-1].length-1][temp_para[datao.length-1][temp_para[datao.length-1].length-1].length-1];
 				for(var index=0;index<datao.length;index++){
 				for(var j=0;j< temp_para[index].length;j++){
 					var senrect_w=0;
@@ -100,8 +94,20 @@ $(document).ready(function(){
 					temp_holder=temp_data;				
 					}
 				}
+				d3.selectAll(".myCheckbox").on("change",function(){
+						var choices = [];
+						d3.selectAll(".selections").selectAll(".myCheckbox").each(function(d){
+							cb = d3.select(this);
+							if(cb.property("checked")){
+								choices.push(cb.property("value"));	
+							}
+						});
+						d3.select("svg").selectAll(".link").remove();
+						d3.select("svg").selectAll("#traingle").remove();
+						drawedge(min_text_temp,max_text_temp,wrdrect_h,wrdrect_w,choices,false);	
+					});	
 				var choices=[];
-				drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
+				drawedge(min_text_temp,max_text_temp,wrdrect_h,wrdrect_w,choices,true);	
 			}
 			
 			function calc_senten(index){
@@ -131,12 +137,25 @@ $(document).ready(function(){
 						}
 					temp_holder=temp_data;				
 					}
+				d3.selectAll(".myCheckbox").on("change",function(){
+						var choices = [];
+						d3.selectAll(".selections").selectAll(".myCheckbox").each(function(d){
+							cb = d3.select(this);
+							if(cb.property("checked")){
+								choices.push(cb.property("value"));	
+							}
+						});
+						d3.select("svg").selectAll(".link").remove();
+						d3.select("svg").selectAll("#traingle").remove();
+						drawedge(min_text,max_text,0,senrect_w*2,choices,false);	
+					});		
 				var choices=[];
-				drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
+				drawedge(min_text,max_text,0,senrect_w*2,choices,true);	
 			}
 			
 			function render_sentence(index){
 				d3.selectAll("svg").selectAll(".link").remove();
+				d3.selectAll(".selections").selectAll(".myCheckbox").property("checked",false);
 				d3.select("svg").selectAll(".group").selectAll(".para").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
@@ -177,6 +196,7 @@ $(document).ready(function(){
 				
 				function render_word(sent_rect,index1,index2){
 					d3.selectAll("svg").selectAll(".link").remove();
+					d3.selectAll(".selections").selectAll(".myCheckbox").property("checked",false);
 					d3.select("svg").selectAll(".group").selectAll(".sentence").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
@@ -236,8 +256,8 @@ $(document).ready(function(){
 							.transition()
 							.delay( 200 );
 					}
-					d3.selectAll(".myCheckbox").on("change",update);
-					function update(){
+					
+					d3.selectAll(".myCheckbox").on("change",function(){
 						var choices = [];
 						d3.selectAll(".selections").selectAll(".myCheckbox").each(function(d){
 							cb = d3.select(this);
@@ -248,7 +268,7 @@ $(document).ready(function(){
 						d3.select("svg").selectAll(".link").remove();
 						d3.select("svg").selectAll("#traingle").remove();
 						drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,false);	
-					}	
+					});	
 					var choices =[];
 					drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
 				}
@@ -302,7 +322,7 @@ $(document).ready(function(){
 							edge_list[l].count++;
 						}
 					}
-						
+					console.log(edge_list);	
 					return edge_list;
 				}
 					
@@ -428,7 +448,7 @@ $(document).ready(function(){
 					return map_edge;
 				}
 				
-				
+				//sort edge based on the number id of the edge may help
 				function drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,first){
 					var edge_list=newedge();
 					var edge_map=[];
