@@ -10,7 +10,6 @@ $(document).ready(function(){
 			//to be after the data rendering thingy
 	function render(){	
 	d3.selectAll("svg").selectAll(".group").remove();
-	d3.selectAll(".selections").attr("style","visibility:hidden");	
 	d3.selectAll("svg").selectAll(".link").remove();
 	d3.json("./data/labelleddata.json", function(error,datao) {
         if (error) {  //If error is not null, something went wrong.
@@ -43,8 +42,8 @@ $(document).ready(function(){
 					for(k=0;k < len;k++){
 						var id=paragraph[i][j][k].Id
 						temp_holder[id] = paragraph[i][j][k];
-						temp_holder[id].sentenceid=j;
-						temp_holder[id].paragraphid=i;
+						//temp_holder[id].sentenceid=j;
+						//temp_holder[id].paragraphid=i;
 					}
 				}
 			}	
@@ -68,11 +67,76 @@ $(document).ready(function(){
 							.on("click",function(){
 							var index = d3.select(this).attr("index");
 							render_sentence(index);
-				});
+				});			
 			}
-
+			calc_coors();
+			//a function which renders senetence and tehn words in sentence to capture their coors
+			function calc_coors(){
+				var temp_para = paragraph;
+				var temp_data = temp_holder;
+				var min_text = temp_para[0][0][0];
+				var max_text = temp_para[datao.length-1][temp_para[datao.length-1].length-1][temp_para[datao.length-1][temp_para[datao.length-1].length-1].length-1];
+				for(var index=0;index<datao.length;index++){
+				for(var j=0;j< temp_para[index].length;j++){
+					var senrect_w=0;
+					var senrect_h=0;	
+					if(index==0){
+						senrect_w = rect_w/(temp_para[index].length);
+						senrect_h = rect_h/(temp_para[index].length);   
+					}
+					else{
+						senrect_w = (rect_w*index)/(temp_para[index].length);
+						senrect_h = (rect_h*index)/(temp_para[index].length);   
+					}
+					temp_para[index][j].x = (rect_w*index) + (senrect_w*j);
+					temp_para[index][j].y = (rect_h*index)+ (senrect_h*j);
+					var wrdrect_w = (senrect_w)/(temp_para[index][j].length);
+					var wrdrect_h = (senrect_h)/(temp_para[index][j].length); 
+					for(var k=0;k< temp_para[index][j].length;k++){
+						var id = temp_para[index][j][k].Id;
+						temp_data[id].x = (rect_w*index)+(senrect_w*j) + (wrdrect_w*k);
+						temp_data[id].y = (rect_h*index)+(senrect_h*j) + (wrdrect_h*k);
+						}
+					temp_holder=temp_data;				
+					}
+				}
+				var choices=[];
+				drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
+			}
+			
+			function calc_senten(index){
+				var temp_para = paragraph;
+				var temp_data = temp_holder;
+				var min_text = temp_para[0][0][0];
+				var max_text = temp_para[index][temp_para[index].length-1][temp_para[index][temp_para[index].length-1].length-1];
+				for(var j=0;j< temp_para[index].length;j++){
+					var senrect_w=0;
+					var senrect_h=0;	
+					if(index==0){
+						senrect_w = rect_w/(temp_para[index].length);
+						senrect_h = rect_h/(temp_para[index].length);   
+					}
+					else{
+						senrect_w = (rect_w*index)/(temp_para[index].length);
+						senrect_h = (rect_h*index)/(temp_para[index].length);   
+					}
+					temp_para[index][j].x = (rect_w*index) + (senrect_w*j);
+					temp_para[index][j].y = (rect_h*index)+ (senrect_h*j);
+					var wrdrect_w = (senrect_w)/(temp_para[index][j].length);
+					var wrdrect_h = (senrect_h)/(temp_para[index][j].length); 
+					for(var k=0;k< temp_para[index][j].length;k++){
+						var id = temp_para[index][j][k].Id;
+						temp_data[id].x = (rect_w*index)+(senrect_w*j) + (wrdrect_w*k);
+						temp_data[id].y = (rect_h*index)+(senrect_h*j) + (wrdrect_h*k);
+						}
+					temp_holder=temp_data;				
+					}
+				var choices=[];
+				drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
+			}
+			
 			function render_sentence(index){
-				
+				d3.selectAll("svg").selectAll(".link").remove();
 				d3.select("svg").selectAll(".group").selectAll(".para").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
@@ -108,10 +172,11 @@ $(document).ready(function(){
 									render_word(sent_rect,index1,index2);
 								});	
 					}
+					calc_senten(index);
 				}		
 				
 				function render_word(sent_rect,index1,index2){
-					d3.selectAll(".selections").attr("style","visibility:visible");				
+					d3.selectAll("svg").selectAll(".link").remove();
 					d3.select("svg").selectAll(".group").selectAll(".sentence").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
@@ -236,7 +301,6 @@ $(document).ready(function(){
 							edge_list[l].next[edge_list[l].count]=  dummydest;
 							edge_list[l].count++;
 						}
-					//console.log(edge_list[l]);
 					}
 						
 					return edge_list;
@@ -585,8 +649,6 @@ $(document).ready(function(){
 										var offset_x=wrdrect_w/2;
 										var offset_y=wrdrect_h/2;
 										var id =edge_map[e].id;
-										console.log("id "+edge_map[e].id); 
-										console.log("flag"+ edge_map[e].flag);
 										var val;
 										if(edge_map[e].flag==0){
 																				
@@ -659,8 +721,7 @@ $(document).ready(function(){
 				var stack = [];
 				stack.push(dest);
 				stack.push(label);
-				stack.push(src);
-				console.log(stack);			
+				stack.push(src);		
 				do{
 					var pattern = /E[0-9]+/g;
 					var pattern2 = /T[0-9]+/g;
