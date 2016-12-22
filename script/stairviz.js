@@ -5,9 +5,14 @@ $(document).ready(function(){
 				
 	var div = d3.select("body").select("div.stairViz").append("div")
                     .attr("class", "tooltip")
-                    .style("opacity", 0);			
-     
-     d3.json("./data/labelleddata.json", function(error,datao) {
+                    .style("opacity", 0);		
+	
+			//to be after the data rendering thingy
+	function render(){	
+	d3.selectAll("svg").selectAll(".group").remove();
+	d3.selectAll(".selections").attr("style","visibility:hidden");	
+	d3.selectAll("svg").selectAll(".link").remove();
+	d3.json("./data/labelleddata.json", function(error,datao) {
         if (error) {  //If error is not null, something went wrong.
             console.log(error);  //Log the error.
         } else {  
@@ -106,6 +111,7 @@ $(document).ready(function(){
 				}		
 				
 				function render_word(sent_rect,index1,index2){
+					d3.selectAll(".selections").attr("style","visibility:visible");				
 					d3.select("svg").selectAll(".group").selectAll(".sentence").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
@@ -165,7 +171,21 @@ $(document).ready(function(){
 							.transition()
 							.delay( 200 );
 					}
-					drawedge(min_text,max_text,wrdrect_h);	
+					d3.selectAll(".myCheckbox").on("change",update);
+					function update(){
+						var choices = [];
+						d3.selectAll(".selections").selectAll(".myCheckbox").each(function(d){
+							cb = d3.select(this);
+							if(cb.property("checked")){
+								choices.push(cb.property("value"));	
+							}
+						});
+						d3.select("svg").selectAll(".link").remove();
+						d3.select("svg").selectAll("#traingle").remove();
+						drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,false);	
+					}	
+					var choices =[];
+					drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,true);	
 				}
 							
 				function funcmouseout(d)
@@ -193,6 +213,7 @@ $(document).ready(function(){
 						
 						var n={ id : edge[l].Id,
 								label:edge[l].label,
+								type: edge[l].type,
 								sourceid: edge[l].sourceid,
 								destinationid: edge[l].destinationid,
 								next:[],
@@ -215,7 +236,7 @@ $(document).ready(function(){
 							edge_list[l].next[edge_list[l].count]=  dummydest;
 							edge_list[l].count++;
 						}
-					console.log(edge_list[l]);
+					//console.log(edge_list[l]);
 					}
 						
 					return edge_list;
@@ -343,8 +364,9 @@ $(document).ready(function(){
 					return map_edge;
 				}
 				
-				function drawedge(min_text,max_text,wrdrect_h){			
-					var edge_list=newedge();	
+				
+				function drawedge(min_text,max_text,wrdrect_h,wrdrect_w,choices,first){
+					var edge_list=newedge();
 					var edge_map=[];
 					for( var l=0;l < edge_list.length ;l++)
 					{
@@ -522,9 +544,26 @@ $(document).ready(function(){
 				}
 							
 			}
+			var temp_arr=[];
+			for(e in edge_map){
+				var type = edge_map[e].type;
+				if((choices.length==4 || first==true)){
+					temp_arr[e]=edge_map[e];					
+				}
+				else if(choices.length>0){//filter edgemap
+					if(type_search(choices,type)){
+						temp_arr[e]=edge_map[e];
+					}
+				}
+				else if(choices.length==0){//dont display
+					temp_arr[e]=edge_map[e];
+				}
+			}
+			edge_map=temp_arr;
+			
 			for(e in edge_map)
 			{
-					var canvas = svg.append("g");
+					var canvas = svg.append("g").attr("class","link");
 					canvas.append("canvas:defs").append("canvas:marker")
 						.attr("id", "triangle")
 						.attr("refX", 3)
@@ -543,20 +582,21 @@ $(document).ready(function(){
 								.attr("flag",edge_map[e].flag)
 								.attr("class","link")
 								.attr("d",function(){
-										
+										var offset_x=wrdrect_w/2;
+										var offset_y=wrdrect_h/2;
 										var id =edge_map[e].id;
 										console.log("id "+edge_map[e].id); 
 										console.log("flag"+ edge_map[e].flag);
 										var val;
 										if(edge_map[e].flag==0){
 																				
-											val = "M "+ edge_map[e].sourcex+ +" "+edge_map[e].sourcey+" "+(max_x-20)+" "+edge_map[e].sourcey+" "+(max_x-20)+" "+edge_map[e].desty+" "+edge_map[e].destx+" "+edge_map[e].desty;
+											val = "M "+ (parseFloat(edge_map[e].sourcex)+offset_x) +" "+(parseFloat(edge_map[e].sourcey)+offset_y)+" "+(max_x-20)+" "+(parseFloat(edge_map[e].sourcey)+offset_y)+" "+(max_x-20)+" "+(parseFloat(edge_map[e].desty)+offset_y)+" "+(parseFloat(edge_map[e].destx)+offset_x)+" "+(parseFloat(edge_map[e].desty)+offset_y);
 										}
 										else if(edge_map[e].flag==2){
-											val = "M "+ edge_map[e].sourcex +" "+edge_map[e].sourcey+" "+(max_x-20)+" "+edge_map[e].sourcey;
+											val = "M "+ (parseFloat(edge_map[e].sourcex)+offset_x) +" "+(parseFloat(edge_map[e].sourcey)+offset_y)+" "+(max_x-20)+" "+(parseFloat(edge_map[e].sourcey)+offset_y);
 										}
 										else if(edge_map[e].flag==1){
-											val = "M "+(max_x-20)+" "+edge_map[e].desty+" "+edge_map[e].destx+" "+edge_map[e].desty;
+											val = "M "+(max_x-20)+" "+(parseFloat(edge_map[e].desty)+offset_y)+" "+(parseFloat(edge_map[e].destx)+offset_x)+" "+(parseFloat(edge_map[e].desty)+offset_y);
 										}
 										return val;})
 								.attr("marker-end", "url(#triangle)")
@@ -589,10 +629,10 @@ $(document).ready(function(){
 				}
 				else if((edg.sourceid).includes("E")){
 					if((edg.destinationid).includes("T")){
-						return "#ff376";
+						return "#ff7376";
 					}
 					else{
-						return "#38a6ad4"
+						return "#8a6ad4"
 					}
 				}
 			}
@@ -720,57 +760,21 @@ $(document).ready(function(){
 							return getdestx(temp_edg);
 					}
 			}
-			/*zoom */
 			
-		/*	let width = $(".stairViz").width();
-			let height = $(".stairViz").height();
-
-			svg.select(".group").select(".word").append("rect")
-				.attr("width", width)
-				.attr("height", height)
-				.style("fill", "none")
-				.style("pointer-events", "all")
-				.call(d3.zoom()
-						.scaleExtent([2, 4])
-						.on("zoom", zoomed));
-
-		
-   function zoomed() {   
-		var transform = d3.event.transform;
-		var element = d3.select(this);
-		svg.select(".group").select(".word").attr("transform", function() {
-							return "scale(" + 30 + "," + 30 + ")";
-				})
-	}*/
- 
-  
-
+			function type_search(choice,type){
+				for(var i=0;i<choice.length;i++){
+					if(type==choice[i])
+						return true;
+				}
+			}
+			
 		}			
 	
 	})
 	}
  })	
+ }
  
- /*let width = $(".stairViz").width();
- let height = $(".stairViz").height();
-
- svg.append("rect")
-    .attr("width", width)
-    .attr("height", height)
-    .style("fill", "none")
-    .style("pointer-events", "all")
-    .call(d3.zoom()
-        .scaleExtent([1 / 2, 4])
-        .on("zoom", zoomed));
-
-		
-   function zoomed() {
-   console.log("I am called");
-  var transform = d3.event.transform;
-  svg.attr("transform", function() {
-    return "translate(" + transform.applyX(0) + "," + transform.applyY(0) + ")";
-  })
-}*/
-
-
+ d3.selectAll(".press").on("click",render);
+ render();
 });
