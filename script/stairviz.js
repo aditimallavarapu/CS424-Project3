@@ -56,7 +56,7 @@ $(document).ready(function(){
 													return rect_h*i;})
 							.attr("width", rect_w)
 							.attr("height", rect_h)
-							.style("fill","yellow")
+							.style("fill","#F8C471")
 							.attr("stroke-width","1")
 							.on("click",function(){
 							var index = d3.select(this).attr("index");
@@ -183,7 +183,7 @@ $(document).ready(function(){
 												return paragraph[index][j].y;})
 							.attr("width", senrect_w)
 							.attr("height", senrect_h)
-							.style("fill","green")
+							.style("fill","#82E0AA")
 							.attr("stroke-width","1")
 							.on("click",function(){
 									var index1 = d3.select(this).attr("index1");
@@ -227,7 +227,7 @@ $(document).ready(function(){
 																	return temp_holder[id].y;})
 												.attr("width", wrdrect_w)
 												.attr("height", wrdrect_h)
-												.style("fill","blue")
+												.style("fill","#3498DB")
 												.attr("stroke-width","1")
 												.on("mouseover",function(){
 							var word = d3.select(this).attr("word");
