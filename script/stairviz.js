@@ -113,27 +113,22 @@ $(document).ready(function(){
 			function calc_senten(index){
 				var temp_para = paragraph;
 				var temp_data = temp_holder;
-				var min_text = temp_para[0][0][0];
+				var min_text = temp_para[index][0][0];
 				var max_text = temp_para[index][temp_para[index].length-1][temp_para[index][temp_para[index].length-1].length-1];
+				console.log(max_text);
 				for(var j=0;j< temp_para[index].length;j++){
 					var senrect_w=0;
 					var senrect_h=0;	
-					if(index==0){
-						senrect_w = rect_w/(temp_para[index].length);
-						senrect_h = rect_h/(temp_para[index].length);   
-					}
-					else{
-						senrect_w = (rect_w*index)/(temp_para[index].length);
-						senrect_h = (rect_h*index)/(temp_para[index].length);   
-					}
-					temp_para[index][j].x = (rect_w*index) + (senrect_w*j);
-					temp_para[index][j].y = (rect_h*index)+ (senrect_h*j);
-					var wrdrect_w = (senrect_w)/(temp_para[index][j].length);
-					var wrdrect_h = (senrect_h)/(temp_para[index][j].length); 
+					senrect_w = max_x/(temp_para[index].length);
+					senrect_h = max_y/(temp_para[index].length);   
+					temp_para[index][j].x = (senrect_w*j);
+					temp_para[index][j].y = (senrect_h*j);
 					for(var k=0;k< temp_para[index][j].length;k++){
+						var wrdrect_w = (senrect_w)/(temp_para[index][j].length);
+						var wrdrect_h = (senrect_h)/(temp_para[index][j].length); 	
 						var id = temp_para[index][j][k].Id;
-						temp_data[id].x = (rect_w*index)+(senrect_w*j) + (wrdrect_w*k);
-						temp_data[id].y = (rect_h*index)+(senrect_h*j) + (wrdrect_h*k);
+						temp_data[id].x = (senrect_w*j)+(wrdrect_w*k);
+						temp_data[id].y = (senrect_h*j)+(wrdrect_h*k);
 						}
 					temp_holder=temp_data;				
 					}
@@ -150,7 +145,7 @@ $(document).ready(function(){
 						drawedge(min_text,max_text,0,senrect_w*2,choices,false);	
 					});		
 				var choices=[];
-				drawedge(min_text,max_text,0,senrect_w*2,choices,true);	
+				drawedge(min_text,max_text,0,wrdrect_w,choices,true);	
 			}
 			
 			function render_sentence(index){
@@ -159,7 +154,7 @@ $(document).ready(function(){
 				d3.select("svg").selectAll(".group").selectAll(".para").transition().duration(750)
 									.on("start", routine).remove();
 								function routine(){	
-									 para_rect.transition().duration(750)
+									 para_rect.attr("transform","translate("+paragraph[0].x+","+paragraph[0].y+")").transition().duration(750)
 										.attr("x", function() { return paragraph[0].x })
 										.attr("y", function() { return paragraph[0].y; })
 										.attr("width", function() { return max_x;})
@@ -188,6 +183,7 @@ $(document).ready(function(){
 							.on("click",function(){
 									var index1 = d3.select(this).attr("index1");
 									var index2 = d3.select(this).attr("index2");
+									
 									render_word(sent_rect,index1,index2);
 								});	
 					}
@@ -322,13 +318,10 @@ $(document).ready(function(){
 							edge_list[l].count++;
 						}
 					}
-					console.log(edge_list);	
 					return edge_list;
 				}
 					
-				//////////////add phrases circles edges among phrases center+radius in x
-				//choose colours ////add more edges
-				//edges for paragraph and sentences
+				
 				function traverse(edge_list,id,flag,min_text,max_text){
 					var stack_s = [];
 					stack_s.push(search_edge(edge_list,id));
@@ -629,7 +622,9 @@ $(document).ready(function(){
 							
 			}
 			var temp_arr=[];
+			
 			for(e in edge_map){
+			
 				var type = edge_map[e].type;
 				if((choices.length==4 || first==true)){
 					temp_arr[e]=edge_map[e];					
@@ -728,7 +723,6 @@ $(document).ready(function(){
 					var src = d3.select(this).attr("src");
 					var dest = d3.select(this).attr("dest");
 					var ed_id = d3.select(this).attr("ed_id");
-					
 					div.html("Id: "+ed_id+"<br>Label: "+ label +"<br> Relationship: <br>" + getword(src,dest,label))
 							.style("left",d3.event.pageX +"px")
 								.style("top", d3.event.pageY - 28 +"px")
