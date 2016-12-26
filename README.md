@@ -1,5 +1,5 @@
-#Text Annotation Graph#
-**by Aditi Mallavarapu, Aryadip Sarkar and Hai Tran**
+#Text Analyser
+**by Aditi Mallavarapu**
 
 This project is a part of CS 424 course, _"Visualization & Visual Analytics"_ at University of Illinois at Chicago.
 
